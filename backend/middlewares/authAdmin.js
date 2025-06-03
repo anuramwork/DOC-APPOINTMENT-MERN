@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken'
 
             const {atoken} = req.headers
             if(!atoken){
-                return res.json({success: false, message: "Not Authorized Login Again"})
+                return res.json({success: false, message: "No token available -Not Authorized Login Again"})
             }
             const token_decode = jwt.verify(atoken,process.env.JWT_SECRET)
 
