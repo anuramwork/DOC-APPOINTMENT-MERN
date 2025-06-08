@@ -173,7 +173,7 @@ const bookAppointment = async (req, res) => {
 //API to get user appointments for frontend my -appointment page
 const listAppointment = async (req, res) => {
   try {
-    console.log('api call to list appointments:');
+    
     
     const { userId } = req.body;
     const appointments = await appointmentModel.find({ userId });
