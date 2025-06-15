@@ -6,6 +6,9 @@ import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appintmentModel.js";
 import razorpay from "razorpay";
+import sendEmail from "../utils/sendEmail.js";
+import { generateAppointmentEmailHTML } from "../utils/appointmentEmail.js";
+import { generateCancelAppointmentEmailHTML } from "../utils/cancelAppointmentEmail.js";
 
 // API to register user
 
@@ -156,7 +159,6 @@ const bookAppointment = async (req, res) => {
       slotDate,
       date: Date.now(),
     };
-    
 
     const newAppointment = new appointmentModel(appointmentData);
     await newAppointment.save();
@@ -164,6 +166,22 @@ const bookAppointment = async (req, res) => {
     //save new slots data in docData
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
     res.json({ success: true, message: "Appointment Booked" });
+
+    let html = generateAppointmentEmailHTML({
+      patientName: userData.name,
+      doctorName: docData.name,
+      date: slotDate,
+      time: slotTime,
+      amount: docData.fees,
+    });
+
+    let mailOptions = {
+      to: userData.email,
+      subject: "Appointment Confirmation",
+      html,
+    };
+
+    await sendEmail(mailOptions);
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
@@ -173,8 +191,6 @@ const bookAppointment = async (req, res) => {
 //API to get user appointments for frontend my -appointment page
 const listAppointment = async (req, res) => {
   try {
-    
-    
     const { userId } = req.body;
     const appointments = await appointmentModel.find({ userId });
     res.json({ success: true, appointments });
@@ -212,6 +228,18 @@ const cancelAppointment = async (req, res) => {
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
     res.json({ success: true, message: "Appointment Cancelled" });
+
+    // sending cancel email to patient
+
+    let html = generateCancelAppointmentEmailHTML(appointmentData);
+
+    let mailOptions = {
+      to: appointmentData.userData.email,
+      subject: "Appointment Cancelled",
+      html,
+    };
+
+    await sendEmail(mailOptions);
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
@@ -225,7 +253,6 @@ const razorpayInstance = new razorpay({
 
 //API to make payment of appointment using razorpay
 const paymentRazorpay = async (req, res) => {
-
   try {
     const { appointmentId } = req.body;
 
@@ -246,35 +273,34 @@ const paymentRazorpay = async (req, res) => {
 
     // creation of an order
     const order = await razorpayInstance.orders.create(options);
-    res.json({ success:true, order });
-    
+    res.json({ success: true, order });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
   }
-
 };
 
 // API to verify payment of razorpay
-const verifyRazorpay = async (req, res)=>{
-     try{
-      console.log("api call to verify razorpay-req body:",req.body)
-      const {razorpay_order_id} = req.body
-      const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
+const verifyRazorpay = async (req, res) => {
+  try {
+    console.log("api call to verify razorpay-req body:", req.body);
+    const { razorpay_order_id } = req.body;
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
 
-      console.log(orderInfo);
-      if(orderInfo.status === 'paid'){
-        await appointmentModel.findByIdAndUpdate(orderInfo.receipt, {payment: true})
-        res.json({success: true, message: "Payment successfull"})
-      }else{
-        es.json({success: false, message: "Payment failed"})
-      }
-      
-     }catch(error){
-      console.log(error);
-    res.json({ success: false, message: error.message})
-     }
-}
+    console.log(orderInfo);
+    if (orderInfo.status === "paid") {
+      await appointmentModel.findByIdAndUpdate(orderInfo.receipt, {
+        payment: true,
+      });
+      res.json({ success: true, message: "Payment successfull" });
+    } else {
+      es.json({ success: false, message: "Payment failed" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
 export {
   registerUser,
@@ -285,5 +311,5 @@ export {
   listAppointment,
   cancelAppointment,
   paymentRazorpay,
-  verifyRazorpay
+  verifyRazorpay,
 };

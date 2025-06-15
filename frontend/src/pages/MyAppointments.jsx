@@ -136,6 +136,7 @@ const MyAppointments = () => {
   };
 
   useEffect(() => {
+    setAppointments([])
     if (token) {
       getUserAppoitments();
     }

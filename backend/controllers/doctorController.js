@@ -2,6 +2,9 @@ import doctorModel from "../models/doctorModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appintmentModel.js";
+import { generateAppointmentCompletedEmailHTML } from "../utils/completeAppointmentEmail.js";
+import { generateCancelAppointmentEmailHTML } from "../utils/cancelAppointmentEmail.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const changeAvailability = async (req, res) => {
   try {
@@ -78,7 +81,19 @@ const appointmentComplete = async (req, res) => {
       await appointmentModel.findByIdAndUpdate(appointmentId, {
         isCompleted: true,
       });
-      return res.json({ success: true, message: "Appointment completed" });
+      res.json({ success: true, message: "Appointment completed" });
+
+      // sending appointment completed email to patient
+
+      let html = generateAppointmentCompletedEmailHTML(appointmentData);
+
+      let mailOptions = {
+        to: appointmentData.userData.email,
+        subject: "Appointment Completed",
+        html,
+      };
+
+      await sendEmail(mailOptions);
     } else {
       return res.json({ success: false, message: "Mark Failed" });
     }
@@ -99,7 +114,19 @@ const appointmentCancel = async (req, res) => {
       await appointmentModel.findByIdAndUpdate(appointmentId, {
         cancelled: true,
       });
-      return res.json({ success: true, message: "Appointment Cancelled" });
+      res.json({ success: true, message: "Appointment Cancelled" });
+
+      // sending cancel email to patient
+
+      let html = generateCancelAppointmentEmailHTML(appointmentData);
+
+      let mailOptions = {
+        to: appointmentData.userData.email,
+        subject: "Appointment Cancelled",
+        html,
+      };
+
+      await sendEmail(mailOptions);
     } else {
       return res.json({ success: false, message: "Cancellation Failed" });
     }
@@ -183,5 +210,5 @@ export {
   appointmentComplete,
   doctorDashboard,
   doctorProfile,
-  updateDoctorProfile
+  updateDoctorProfile,
 };
