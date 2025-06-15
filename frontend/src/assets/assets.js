@@ -39,7 +39,7 @@ import Pediatricians from './Pediatricians.svg'
 import main_logo from './main_logo.png'
 
 
-
+const main_logo_url = 'https://res.cloudinary.com/drebgejvg/image/upload/v1750008337/main_logo_rfqzz3.png'
 export const assets = {
     appointment_img,
     header_img,
@@ -58,7 +58,9 @@ export const assets = {
     upload_icon,
     stripe_logo,
     razorpay_logo,
-    main_logo
+    main_logo,
+    main_logo_url
+    
     
     
 }

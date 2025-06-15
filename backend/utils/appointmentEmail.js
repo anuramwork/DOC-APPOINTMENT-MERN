@@ -1,6 +1,13 @@
 export const generateAppointmentEmailHTML = (appointmentData) => `
   <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; padding: 30px;">
     <table style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+
+     <!-- Logo -->
+      <tr>
+        <td style="text-align: center; padding: 20px;">
+          <img src="https://res.cloudinary.com/drebgejvg/image/upload/v1750008337/main_logo_rfqzz3.png" alt="Clinic Logo" style="max-width: 120px; height: auto;" />
+        </td>
+      </tr>
       <tr>
         <td style="background-color: #2c7be5; padding: 20px; color: #ffffff; text-align: center;">
           <h1 style="margin: 0; font-size: 24px;">Appointment Confirmation</h1>

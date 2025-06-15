@@ -5,7 +5,7 @@ export const generateAppointmentCompletedEmailHTML = (appointmentData) => `
       <!-- Logo -->
       <tr>
         <td style="text-align: center; padding: 20px;">
-          <img src="https://yourclinicdomain.com/logo.png" alt="Clinic Logo" style="max-width: 120px; height: auto;" />
+          <img src="https://res.cloudinary.com/drebgejvg/image/upload/v1750008337/main_logo_rfqzz3.png" alt="Clinic Logo" style="max-width: 120px; height: auto;" />
         </td>
       </tr>
 
