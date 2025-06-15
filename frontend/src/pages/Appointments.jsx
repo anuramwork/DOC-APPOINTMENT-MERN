@@ -194,7 +194,7 @@ const Appointments = () => {
             )
           })}
         </div>
-        <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an appointment</button>
+        <button onClick={()=>{bookAppointment(); scrollTo(0,0)}} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an appointment</button>
       </div>
 
       {/* --Listing Related Doctors-- */}
