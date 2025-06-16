@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { DoctorContext } from "../../context/DoctorContext";
 import { AppContext } from "../../context/AppContext";
 import { assets } from "../../assets/assets";
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 const DoctorAppointment = () => {
   const {
@@ -17,6 +18,31 @@ const DoctorAppointment = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null); // "cancel" | "complete"
+  const [selectedId, setSelectedId] = useState(null);
+
+  const openModal = (action, id) => {
+    setSelectedAction(action);
+    setSelectedId(id);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedAction(null);
+    setSelectedId(null);
+  };
+
+  const handleConfirm = () => {
+    if (selectedAction === "cancel") {
+      cancelAppointment(selectedId);
+    } else if (selectedAction === "complete") {
+      completeAppointment(selectedId);
+    }
+    closeModal();
+  };
+
   const paginatedAppointments = [...appointments]
     .reverse()
     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -79,13 +105,13 @@ const DoctorAppointment = () => {
             ) : (
               <div className="flex">
                 <img
-                  onClick={() => cancelAppointment(item._id)}
+                  onClick={() => openModal('cancel',item._id)}
                   className="w-10 cursor-pointer"
                   src={assets.cancel_icon}
                   alt=""
                 />
                 <img
-                  onClick={() => completeAppointment(item._id)}
+                  onClick={() => openModal('complete',item._id)}
                   className="w-10 cursor-pointer"
                   src={assets.tick_icon}
                   alt=""
@@ -136,6 +162,17 @@ const DoctorAppointment = () => {
             </select>
           </div>
         </div>
+        <ConfirmationModal
+          show={modalVisible}
+          title={
+            selectedAction === "cancel"
+              ? "Cancel Appointment"
+              : "Complete Appointment"
+          }
+          message={`Are you sure you want to ${selectedAction} this appointment?`}
+          onConfirm={handleConfirm}
+          onCancel={closeModal}
+        />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { AdminContext } from "../../context/adminContext";
 import { AppContext } from "../../context/AppContext";
 import { assets } from "../../assets/assets";
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 const AllAppointments = () => {
   const { aToken, appointments, getAllAppointments, cancelAppointment } =
@@ -11,11 +12,28 @@ const AllAppointments = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const paginatedAppointments = [...appointments].reverse().slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const paginatedAppointments = [...appointments]
+    .reverse()
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(appointments.length / itemsPerPage);
+
+  const openModal = (id) => {
+    setModalVisible(true);
+    setSelectedId(id);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedId(null);
+  };
+
+  const handleConfirm = () => {
+    cancelAppointment(selectedId);
+    closeModal()
+  };
 
   useEffect(() => {
     if (aToken) {
@@ -24,8 +42,8 @@ const AllAppointments = () => {
   }, [aToken]);
 
   useEffect(() => {
-  window.scrollTo(0, 0);
-}, [currentPage]);
+    window.scrollTo(0, 0);
+  }, [currentPage]);
 
   return (
     <div className="w-full max-w-6xl m-5">
@@ -76,7 +94,7 @@ const AllAppointments = () => {
               <p className="text-green-400 text-xs font-medium">Completed</p>
             ) : (
               <img
-                onClick={() => cancelAppointment(item._id)}
+                onClick={() => openModal(item._id)}
                 className="w-10 cursor-pointer"
                 src={assets.cancel_icon}
                 alt=""
@@ -126,6 +144,13 @@ const AllAppointments = () => {
             </select>
           </div>
         </div>
+        <ConfirmationModal
+          show={modalVisible}
+          title={"Cancel Appointment"}
+          message={`Are you sure you want to cancel this appointment?`}
+          onConfirm={handleConfirm}
+          onCancel={closeModal}
+        />
       </div>
     </div>
   );

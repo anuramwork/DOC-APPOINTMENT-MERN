@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const MyAppointments = () => {
   const { backendUrl, token, getDoctorsData } = useContext(AppContext);
@@ -12,6 +13,8 @@ const MyAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
   const paginatedAppointments = [...appointments].slice(
     (currentPage - 1) * itemsPerPage,
@@ -135,6 +138,22 @@ const MyAppointments = () => {
     }
   };
 
+
+  const openModal = (id) => {
+    setModalVisible(true);
+    setSelectedId(id);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedId(null);
+  };
+
+  const handleConfirm = () => {
+    cancelAppointment(selectedId);
+    closeModal()
+  };
+
   useEffect(() => {
     setAppointments([])
     if (token) {
@@ -193,7 +212,7 @@ const MyAppointments = () => {
                 )}
                 {!item.cancelled && !item.isCompleted && (
                   <button
-                    onClick={() => cancelAppointment(item._id)}
+                    onClick={() => openModal(item._id)}
                     className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border  hover:bg-red-600 hover:text-white transition-all duration-300"
                   >
                     Cancel Appointment
@@ -255,6 +274,13 @@ const MyAppointments = () => {
             ))}
           </select>
         </div>
+        <ConfirmationModal
+          show={modalVisible}
+          title={"Cancel Appointment"}
+          message={`Are you sure you want to cancel this appointment?`}
+          onConfirm={handleConfirm}
+          onCancel={closeModal}
+        />
       </div>
     </div>
   );
