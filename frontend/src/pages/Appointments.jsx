@@ -6,6 +6,7 @@ import RelatedDoctors from '../components/RelatedDoctors';
 import {toast} from 'react-toastify'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
+import ConfirmationModal from '../components/ConfirmationModal';
 
 
 const Appointments = () => {
@@ -19,6 +20,8 @@ const Appointments = () => {
    const [docSlots, setDocSlots] = useState([]);
    const [slotIndex, setSlotIndex] = useState(0);
    const[slotTime, setSlotTime] = useState('')
+   const [modalVisible, setModalVisible] = useState(false);
+   
 
    const fetchDocInfo = async ()=>{
     const docInfo =await doctors.find(doc => doc._id === docId);
@@ -129,6 +132,22 @@ const Appointments = () => {
     }
   }
 
+  
+  const openModal = (id) => {
+    setModalVisible(true);
+  
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    
+  };
+
+  const handleConfirm = () => {
+    bookAppointment();
+    closeModal()
+  };
+
    useEffect(()=>{
       fetchDocInfo();
    },[doctors, docId])
@@ -194,11 +213,19 @@ const Appointments = () => {
             )
           })}
         </div>
-        <button onClick={()=>{bookAppointment(); scrollTo(0,0)}} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an appointment</button>
+        <button onClick={()=>{openModal(); scrollTo(0,0)}} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an appointment</button>
       </div>
 
       {/* --Listing Related Doctors-- */}
       <RelatedDoctors docId= {docId} speciality={docInfo.speciality}/>
+
+      <ConfirmationModal
+          show={modalVisible}
+          title={"Book Appointment"}
+          message={`Are you sure you want to book this appointment?`}
+          onConfirm={handleConfirm}
+          onCancel={closeModal}
+        />
       
     </div>
   )
