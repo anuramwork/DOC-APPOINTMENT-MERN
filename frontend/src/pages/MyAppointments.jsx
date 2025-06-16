@@ -16,11 +16,26 @@ const MyAppointments = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-  const paginatedAppointments = [...appointments].slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  const totalPages = Math.ceil(appointments.length / itemsPerPage);
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const filteredAppointments =
+    statusFilter === "All"
+      ? appointments
+      : appointments.filter((item) => {
+          if (statusFilter === "Completed") return item.isCompleted;
+          if (statusFilter === "Cancelled") return item.cancelled;
+          if (statusFilter === "Paid") return item.payment;
+          if (statusFilter === "Pending")
+            return !item.isCompleted && !item.cancelled;
+          return true;
+        });
+
+  const paginatedAppointments = [...filteredAppointments]
+    .reverse()
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+
   const months = [
     "",
     "Jan",
@@ -138,7 +153,6 @@ const MyAppointments = () => {
     }
   };
 
-
   const openModal = (id) => {
     setModalVisible(true);
     setSelectedId(id);
@@ -151,11 +165,11 @@ const MyAppointments = () => {
 
   const handleConfirm = () => {
     cancelAppointment(selectedId);
-    closeModal()
+    closeModal();
   };
 
   useEffect(() => {
-    setAppointments([])
+    setAppointments([]);
     if (token) {
       getUserAppoitments();
     }
@@ -166,6 +180,25 @@ const MyAppointments = () => {
       <p className="pb-3 mt-12 font-medium text-zinc-700 border-b">
         My appointments
       </p>
+      <div className="flex gap-3 mb-4 flex-wrap mt-2">
+        {["All", "Completed", "Cancelled", "Paid", "Pending"].map((status) => (
+          <button
+            key={status}
+            onClick={() => {
+              setStatusFilter(status);
+              setCurrentPage(1); // Reset to page 1 on filter change
+            }}
+            className={`px-4 py-1.5 text-sm border rounded-full transition-all duration-200 ${
+              statusFilter === status
+                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
       <div>
         {paginatedAppointments.map((item, index) => {
           return (

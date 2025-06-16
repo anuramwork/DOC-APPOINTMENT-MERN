@@ -22,6 +22,26 @@ const DoctorAppointment = () => {
   const [selectedAction, setSelectedAction] = useState(null); // "cancel" | "complete"
   const [selectedId, setSelectedId] = useState(null);
 
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const filteredAppointments =
+    statusFilter === "All"
+      ? appointments
+      : appointments.filter((item) => {
+          if (statusFilter === "Completed") return item.isCompleted;
+          if (statusFilter === "Cancelled") return item.cancelled;
+          if (statusFilter === "Paid") return item.payment;
+          if (statusFilter === "Pending")
+            return !item.isCompleted && !item.cancelled;
+          return true;
+        });
+
+  const paginatedAppointments = [...filteredAppointments]
+    .reverse()
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+
   const openModal = (action, id) => {
     setSelectedAction(action);
     setSelectedId(id);
@@ -43,11 +63,6 @@ const DoctorAppointment = () => {
     closeModal();
   };
 
-  const paginatedAppointments = [...appointments]
-    .reverse()
-    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const totalPages = Math.ceil(appointments.length / itemsPerPage);
-
   useEffect(() => {
     if (dToken) {
       getAppointments();
@@ -62,6 +77,27 @@ const DoctorAppointment = () => {
     <div className="w-full max-w-6xl m-5">
       <p className="mb-3 text-lg font-medium">All Appointments </p>
       <div className="bg-white border rounded text-sm max-h-[80vh] min-h-[50vh] overflow-y-scroll">
+        <div className="flex gap-3 mb-4 flex-wrap">
+          {["All", "Completed", "Cancelled", "Paid", "Pending"].map(
+            (status) => (
+              <button
+                key={status}
+                onClick={() => {
+                  setStatusFilter(status);
+                  setCurrentPage(1); // Reset to page 1 on filter change
+                }}
+                className={`px-4 py-1.5 text-sm border rounded-full transition-all duration-200 ${
+                  statusFilter === status
+                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {status}
+              </button>
+            )
+          )}
+        </div>
+
         <div className="hidden sm:grid grid-cols-[0.5fr_2fr_1fr_1fr_3fr_1fr_1fr] gap-1 py-3 px-6 border-b">
           <p>#</p>
           <p>Patient</p>
@@ -102,16 +138,34 @@ const DoctorAppointment = () => {
               <p className="text-red-400 text-xs font-medium">Cancelled</p>
             ) : item.isCompleted ? (
               <p className="text-green-400 text-xs font-medium">Completed</p>
-            ) : (
-              <div className="flex">
+            ) : item.payment ? (
+              <div className="flex flex-col gap-1">
+                <p className="text-green-400 text-xs font-medium">Paid</p>
+                <div className="flex">
                 <img
-                  onClick={() => openModal('cancel',item._id)}
+                  onClick={() => openModal("cancel", item._id)}
                   className="w-10 cursor-pointer"
                   src={assets.cancel_icon}
                   alt=""
                 />
                 <img
-                  onClick={() => openModal('complete',item._id)}
+                  onClick={() => openModal("complete", item._id)}
+                  className="w-10 cursor-pointer"
+                  src={assets.tick_icon}
+                  alt=""
+                />
+              </div>
+              </div>
+            ):(
+              <div className="flex">
+                <img
+                  onClick={() => openModal("cancel", item._id)}
+                  className="w-10 cursor-pointer"
+                  src={assets.cancel_icon}
+                  alt=""
+                />
+                <img
+                  onClick={() => openModal("complete", item._id)}
                   className="w-10 cursor-pointer"
                   src={assets.tick_icon}
                   alt=""
